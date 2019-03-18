@@ -1,0 +1,68 @@
+# Growi
+
+version: "3"
+services:
+  # GROWI（Node.js）コンテナ
+  growi:
+    image: weseek/growi
+    container_name: my_growi
+    networks:
+      - my_growi_net
+    restart: always
+    environment:
+      NODE_ENV: production
+      MONGO_URI: mongodb://mongo:27017/growi
+      REDIS_URL: redis://redis:6379/growi
+      ELASTICSEARCH_URI: http://elasticsearch:9200/growi
+      PASSWORD_SEED: myseed
+      FILE_UPLOAD: local
+    ports: 
+      - 3000:3000
+    volumes:
+      - ./growi/data:/data
+
+  # MongoDBコンテナ
+  mongo:
+    image: mongo:4
+    container_name: my_growi_mongo
+    networks:
+      - my_growi_net
+    restart: always
+    volumes:
+      - ./mongodb/conf:/data/configdb
+      - ./mongodb/data:/data/db
+
+  # Redisコンテナ
+  redis:
+    image: redis:5-alpine
+    container_name: my_growi_redis
+    networks:
+      - my_growi_net
+    restart: always
+    volumes:
+      - ./redis/data:/data
+
+  # ElasticSearchコンテナ
+  elasticsearch:
+    image: elasticsearch:6.6.2-growi
+    build: ./elasticsearch/
+    container_name: my_growi_es
+    networks:
+      - my_growi_net
+    restart: always
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    environment:
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
+    volumes:
+      - ./elasticsearch/data:/usr/share/elasticsearch/data
+      - ./elasticsearch/conf/jvm.options:/etc/elasticsearch/jvm.options:ro
+      - ./elasticsearch/conf/elasticsearch.yml:/etc/elasticsearch/elasticsearch.yml:ro
+    
+# ブリッジネットワーク
+networks:
+  my_growi_net:
+    driver: bridge
