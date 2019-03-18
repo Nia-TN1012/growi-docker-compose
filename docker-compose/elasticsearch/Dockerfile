@@ -28,7 +28,7 @@ RUN mkdir -p ./plugins \
     && elasticsearch-plugin install analysis-kuromoji \
     && elasticsearch-plugin install analysis-icu
 
-COPY config ./config
+COPY conf ./config
 
 VOLUME /usr/share/elasticsearch/data
 
